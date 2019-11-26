@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-mesibo" version="1.0.6" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+	<name>MesiboCordova</name>
+	<js-module name="MesiboCordova" src="www/MesiboCordova.js">
+		<clobbers target="MesiboCordova"/>
+	</js-module>
+	<platform name="android">
+		<framework src="com.mesibo.api:mesibo:1.0.89"/>
+		<framework src="com.mesibo.api:calls:1.0.74"/>
+		<config-file parent="/*" target="res/xml/config.xml">
+			<feature name="MesiboCordova">
+				<param name="android-package" value="cordova.plugin.mesibo.MesiboCordova"/>
+			</feature>
+		</config-file>
+		<config-file parent="/*" target="AndroidManifest.xml"/>
+		<source-file src="src/android/MesiboCordova.java" target-dir="src/cordova/plugin/mesibo"/>
+		<source-file src="src/android/Activity.java" target-dir="src/cordova/plugin/mesibo"/>
+		<source-file src="src/android/File.java" target-dir="src/cordova/plugin/mesibo"/>
+		<source-file src="src/android/Message.java" target-dir="src/cordova/plugin/mesibo"/>
+		<source-file src="src/android/Profile.java" target-dir="src/cordova/plugin/mesibo"/>
+		<source-file src="src/android/Status.java" target-dir="src/cordova/plugin/mesibo"/>
+	</platform>
+	<platform name="ios">
+		<config-file parent="/*" target="config.xml">
+			<feature name="MesiboCordova">
+				<param name="ios-package" value="MesiboCordova"/>
+			</feature>
+		</config-file>
+		<source-file src="src/ios/MesiboCordova.swift"/>
+		<dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
+	</platform>
+</plugin>

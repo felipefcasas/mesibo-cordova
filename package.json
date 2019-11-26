@@ -1,0 +1,16 @@
+{
+  "name": "cordova-plugin-mesibo",
+  "version": "1.0.6",
+  "description": "1 - plugman create --name MesiboCordova --plugin_id cordova-plugin-mesibo --plugin_version 1.0.6 6 - plugman platform add --platform_name android 3 - plugman platform add --platform_name ios",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.andain.cl:gc/mesibo-cordova.git"
+  },
+  "author": "Felipe Fuentes",
+  "license": "ISC",
+  "homepage": "https://git.andain.cl/gc/mesibo-cordova/blob/master/README"
+}

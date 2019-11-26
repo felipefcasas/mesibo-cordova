@@ -1,0 +1,45 @@
+#### Instalación del plugin
+
+* ionic cordova plugin add git+https://git.andain.cl/gc/mesibo-cordova.git
+
+#### Compilando la App
+##### Android
+* Ir a platforms -> android -> build.gradle y asegurarse de que esté la siguiente configuración.
+    *  defaultBuildToolsVersion="28.0.3"
+    *  defaultCompileSdkVersion=28
+* Acontinuación, ir a platforms -> android -> app build.gradle y realizar lo siguiente.
+    * Comentar la línea 106 (puede variar) Ejm: ext.cdvCompileSdkVersion = privateHelpers.getProjectTarget() 
+    * Descomentar la línea 107 (puede variar) Ejm: ext.cdvCompileSdkVersion = project.ext.defaultCompileSdkVersion
+    * Comentar la línea 110 (puede variar) Ejm: ext.cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+    * Descomentar la línea 111 (puede variar) Ejm: ext.cdvBuildToolsVersion = project.ext.defaultBuildToolsVersion
+* Compilar la app normalmente, ejm: ionic cordova build android
+##### iOS
+* Abrir el proyecto en xcode (proyecto.workspace)
+* Debes tener los frameworks de mesibo, si no los tienes clona el siguiente proyecto
+    * git clone https://github.com/mesibo/mesiboframeworks.git
+* Una vez tengas los frameworks, copia los frameworks "mesibo.framework" y "mesibocall.framework" en la carpeta de frameworks del proyecto.
+#### Diccionario.
+##### Actividades
+*Una actividad es un evento gatillado por otros usuarios, estos eventos tiene un valor entero los cuales representan una acción en el sistema.*
+
+* Valor ***1***: Un usuario ha dejado de escribir.
+* Valor ***2***: Un usuario ha comenzado a escribir.
+* Valor ***3***: El usuario actual ha sido eliminado de un chat grupal.
+* Valor ***4***: Otro usuario ha salido de una conversación.
+* Valor ***5***: El usuario actual ha sido agregado a una conversación.
+* Valor ***6***: Un nuevo usuario se ha unido a una conversación.
+* Valor ***7***: El usuario actual se ha transformado en administrador de un grupo.
+
+##### Estados de mensajes
+
+* ***136*** -> Bloqueado.
+* ***22*** -> Llamada entrante.
+* ***21*** -> LLamada perdida.
+* ***23*** -> LLamando.
+* ***2*** -> Enviado.
+* ***132*** -> Expirado.
+* ***130*** -> Inbox full.
+* ***131*** -> Destino no válido.
+* ***0*** -> Enviando.
+* ***3*** -> Leído.
+* ***1*** -> Enviado.
