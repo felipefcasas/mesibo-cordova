@@ -1,6 +1,6 @@
 #### Instalación del plugin
 
-* ionic cordova plugin add git+https://github.com/felipefcasas/mesibo-cordova.git
+* cordova plugin add git+https://github.com/felipefcasas/mesibo-cordova.git --nofetch
 
 #### Compilando la App
 ##### Android
