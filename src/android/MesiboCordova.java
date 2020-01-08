@@ -145,6 +145,18 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
             return true;
         }
 
+        // Guarda un mensaje personalizado
+        if (action.equals("saveCustomMessage")) {
+            int id = Integer.parseInt(args.getJSONObject(0).getString("id"));
+            String peer = args.getJSONObject(0).getString("peer");
+            String groupId = args.getJSONObject(0).getString("groupId");
+            String message = args.getJSONObject(0).getString("message");
+            String sender = args.getJSONObject(0).getString("sender");
+            String type = args.getJSONObject(0).getString("type");
+            this.saveCustomMessage(id, peer, Long.parseLong(groupId), Integer.parseInt(type), message, sender, callbackContext);
+            return true;
+        }
+
         // Suscribe a un evento que escucha cuando llegan nuevos mensajes
         if (action.equals("onMessage")) {
             MesiboCordova.callbackOnMessage = callbackContext;
@@ -381,6 +393,96 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
 
             callbackContext.success(sentActivity.toJson());
             return true;
+        } catch (Exception ex) {
+            result.put("message", ex.toString());
+            callbackContext.error(result);
+            return false;
+        }
+    }
+
+    private boolean saveCustomMessage(int id, String peer, long groupId, int type, String message, String sender, CallbackContext callbackContext) throws JSONException {
+        JSONObject result = new JSONObject();
+        try {
+            Mesibo.MessageParams messageParams = new Mesibo.MessageParams();
+            messageParams.enableReadReceipt(true);
+            messageParams.ts = new Date().getTime();
+            messageParams.setType(type);
+
+            if (groupId > 0) {
+                messageParams.setGroup(groupId);
+            } else if (!(peer == null || peer.equals(""))) {
+                messageParams.setPeer(peer);
+            } else {
+                result.put("message", "Debe proveer un groupid o peer.");
+                callbackContext.error(result);
+                return false;
+            }
+
+            Mesibo.UserProfile selfProfile = Mesibo.getSelfProfile();
+
+            if (selfProfile == null) {
+                selfProfile = new Mesibo.UserProfile();
+                selfProfile.address = sender;
+            }
+
+            Profile profile = new Profile();
+            profile.setAddress(selfProfile.address);
+            profile.setGroupId(selfProfile.groupid);
+            profile.setLastSeen(selfProfile.lastActiveTime);
+            profile.setStatus(selfProfile.status);
+            profile.setUnread(selfProfile.unread);
+
+            long messageId = (id > 0 ? id : Mesibo.random());
+            int saved = Mesibo.saveCustomMessage(messageParams, messageId, message);
+
+            Message savedMessage = null;
+            File file = new File();
+
+            try {
+                JSONObject json = new JSONObject(message);
+
+                if (saved == 0) {
+                    savedMessage = new Message();
+
+                    if (type == 2) {
+                        JSONObject jsonFile = new JSONObject(json.getString("file"));
+                        file.setUrl(jsonFile.getString("url"));
+                        file.setType(jsonFile.getString("type"));
+                        file.setName(jsonFile.getString("name"));
+                        file.setSize(jsonFile.getString("size"));
+                    }
+
+                    Message reference = new Message();
+
+                    savedMessage.setContent(json.getString("content"));
+                    savedMessage.setFile(file);
+                    savedMessage.setGroupId(groupId);
+                    savedMessage.setId(messageId);
+                    savedMessage.setIncoming(false);
+                    savedMessage.setPeer(peer);
+                    savedMessage.setSender(sender);
+                    savedMessage.setResent(Boolean.parseBoolean(json.getString("resent")));
+                    savedMessage.setReference(reference);
+                    savedMessage.setTime(messageParams.ts < 1 ? new Date().getTime() : messageParams.ts);
+                    savedMessage.setStatus(Status.findStatus(saved));
+                    savedMessage.setType(type);
+                }
+
+                if (savedMessage == null) {
+                    result.put("message", "Mensaje no enviado.");
+                    result.put("status", saved);
+                    callbackContext.error(result);
+                    return false;
+                }
+
+                callbackContext.success(savedMessage.toJson());
+                return true;
+
+            } catch (JSONException ex) {
+                result.put("message", ex.toString());
+                callbackContext.error(result);
+                return false;
+            }
         } catch (Exception ex) {
             result.put("message", ex.toString());
             callbackContext.error(result);

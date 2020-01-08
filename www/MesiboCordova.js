@@ -29,6 +29,10 @@ module.exports = {
 		exec(success, error, 'MesiboCordova', 'sendMessage', [params]);
 	},
 
+	saveCustomMessage: function(params, success, error) {
+		exec(success, error, 'MesiboCordova', 'saveCustomMessage', [params]);
+	},
+
 	sendActivity: function(params, success, error) {
 		exec(success, error, 'MesiboCordova', 'sendActivity', [params]);
 	},
