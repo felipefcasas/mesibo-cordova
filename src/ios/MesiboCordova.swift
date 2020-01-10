@@ -430,6 +430,125 @@
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId);
             }
         }
+
+        @objc(saveCustomMessage:)
+        func saveCustomMessage(command: CDVInvokedUrlCommand) {
+            
+            // Declaramos un resultado para Cordova (Asumimos que fallará)
+            var result = ["message": "Debe proveer un groupId o peer."] as [AnyHashable : Any]
+            
+            // Obtenemos los parámetros del JSON
+            let params = command.arguments[0] as? [String:Any]
+            
+            var id = 0
+
+            do {
+                id = try params?["id"] as! UInt32
+            } catch let error { id = 0 }
+            
+            let peer = params?["peer"] as! String
+            let groupId = params?["groupId"] as! UInt32
+            let message = params?["message"] as! String
+            let sender = params?["sender"] as! String
+            let type = params?["type"] as! Int32
+            
+            let messageParams = MesiboParams()
+            
+            messageParams.type = type
+            
+            // Si groupId es mayor a 0, estamos enviando un mensaje a un grupo
+            if(groupId > 0) {
+                messageParams.setGroup(groupId);
+            }
+                // Si no es grupo, verificamos que sea chat 1 a 1
+            else if(peer != "") {
+                messageParams.peer = peer;
+            }
+                // Si no tenemos ninguno de los 2, retornamos el error y paramos la ejecución del método
+            else {
+                let pluginResult = CDVPluginResult (status: CDVCommandStatus_ERROR, messageAs: result);
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId);
+                return;
+            }
+            
+            var selfProfile = Mesibo.getInstance().getSelfProfile()
+            
+            if(selfProfile == nil) {
+                selfProfile = MesiboUserProfile()
+                selfProfile?.address = sender
+            }
+            
+            let mesiboUserProfile = MesiboUserProfile()
+            mesiboUserProfile.name = selfProfile?.name;
+            mesiboUserProfile.address = selfProfile?.address;
+            mesiboUserProfile.groupid = selfProfile!.groupid;
+            mesiboUserProfile.status = selfProfile?.status;
+            mesiboUserProfile.picturePath = selfProfile?.picturePath;
+            mesiboUserProfile.unread = selfProfile!.unread;
+            mesiboUserProfile.draft = selfProfile?.draft;
+            mesiboUserProfile.flag = selfProfile!.flag;
+            mesiboUserProfile.lastActiveTime = selfProfile!.lastActiveTime;
+            
+            let messageId = (id > 0 ? id : Mesibo.getInstance().random());
+            
+            do {
+                let data = message.data(using: .utf8)!
+                let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                let saved = Mesibo.getInstance()?.saveCustomMessage(messageParams, msgid: messageId, string: message)
+                var file: Any = ""
+                
+                if(saved == 0) {
+                    if(type == 2) {
+                        do {
+                            let fileData = json!["file"] as! NSDictionary
+                            
+                            file = [
+                                "url": fileData["url"] as Any,
+                                "size": fileData["size"] as Any,
+                                "type": fileData["type"] as Any,
+                                "name": fileData["name"] as Any
+                            ] as [AnyHashable : Any]
+                        } catch let parsingError {
+                            print("Error", parsingError)
+                            result = ["message": parsingError] as [AnyHashable : Any]
+                            let pluginResult = CDVPluginResult (status: CDVCommandStatus_ERROR, messageAs: result);
+                            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId);
+                        }
+                    }
+                    
+                    let status: Status = self.findStatusByValue(value: saved!);
+                    
+                    result = [
+                        "id": messageId,
+                        "content": json!["content"] as! String,
+                        "type": type,
+                        "reference": "",
+                        "resent": json!["resent"] as! Bool,
+                        "status": [
+                            "value": status.value as Any,
+                            "label": status.label as Any,
+                            "code": status.code as Any,
+                            "icon": status.icon,
+                            "cssClass": status.cssClass as Any
+                            ] as [AnyHashable : Any],
+                        "isIncoming": false,
+                        "file": file,
+                        "time": Mesibo.getInstance().getTimestamp(),
+                        "peer": peer,
+                        "sender": sender,
+                        "groupId": groupId
+                        ] as [AnyHashable : Any]
+                    
+                    let pluginResult = CDVPluginResult (status: CDVCommandStatus_OK, messageAs: result);
+                    self.commandDelegate!.send(pluginResult, callbackId: command.callbackId);
+                }
+            } catch let parsingError {
+                print("Error", parsingError)
+                result = ["message": parsingError] as [AnyHashable : Any]
+                let pluginResult = CDVPluginResult (status: CDVCommandStatus_ERROR, messageAs: result);
+                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId);
+            }
+        }
         
         // Realiza una llamada (normal o de video)
         @objc(call:)
