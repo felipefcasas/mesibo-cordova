@@ -25,7 +25,6 @@ import com.mesibo.api.Mesibo;
 import com.mesibo.api.MesiboCore;
 import com.mesibo.calls.MesiboCall;
 
-
 public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListener, Mesibo.UserProfileLookupListener {
 
     private static Context context = null;
@@ -50,20 +49,23 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
-        // Setea el token para acceder a los servicios de mesibo (token del usuario actual)
+        // Setea el token para acceder a los servicios de mesibo (token del usuario
+        // actual)
         if (action.equals("setAccessToken")) {
             String token = args.getJSONObject(0).getString("token");
             this.setAccessToken(token, callbackContext);
             return true;
         }
 
-        // Setea el token para acceder a los servicios de mesibo (token del usuario actual)
+        // Setea el token para acceder a los servicios de mesibo (token del usuario
+        // actual)
         if (action.equals("stopMesibo")) {
             this.stopMesibo(callbackContext);
             return true;
         }
 
-        // Obtiene de la base de datos local, una cantidad dinámica de mensajes de un "peer"
+        // Obtiene de la base de datos local, una cantidad dinámica de mensajes de un
+        // "peer"
         if (action.equals("readProfileMessages")) {
             String address = args.getJSONObject(0).getString("address");
             int messageCount = Integer.parseInt(args.getJSONObject(0).getString("messageCount"));
@@ -74,7 +76,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
             return true;
         }
 
-        // Obtiene de la base de datos local, una cantidad dinámica de mensajes de un "peer"
+        // Obtiene de la base de datos local, una cantidad dinámica de mensajes de un
+        // "peer"
         if (action.equals("readRoomMessages")) {
             String address = args.getJSONObject(0).getString("address");
             int messageCount = Integer.parseInt(args.getJSONObject(0).getString("messageCount"));
@@ -153,7 +156,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
             String message = args.getJSONObject(0).getString("message");
             String sender = args.getJSONObject(0).getString("sender");
             String type = args.getJSONObject(0).getString("type");
-            this.saveCustomMessage(id, peer, Long.parseLong(groupId), Integer.parseInt(type), message, sender, callbackContext);
+            this.saveCustomMessage(id, peer, Long.parseLong(groupId), Integer.parseInt(type), message, sender,
+                    callbackContext);
             return true;
         }
 
@@ -175,12 +179,14 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
             return true;
         }
 
-        // Suscribe a un evento que escucha cuando llega un mensaje con ubicación (NO IMPLEMENTADO)
+        // Suscribe a un evento que escucha cuando llega un mensaje con ubicación (NO
+        // IMPLEMENTADO)
         if (action.equals("onLocation")) {
             return true;
         }
 
-        // Suscribe a un evento que escucha cuando llega un mensaje con archivo (NO IMPLEMENTADO)
+        // Suscribe a un evento que escucha cuando llega un mensaje con archivo (NO
+        // IMPLEMENTADO)
         if (action.equals("onFile")) {
             return true;
         }
@@ -239,7 +245,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
     }
 
     // Obtiene una lista de mensajes de una sala en particular
-    private boolean readRoomMessages(String address, long groupId, int messageCount, boolean enableFifo, boolean enableReadReceipt, CallbackContext callbackContext) throws JSONException {
+    private boolean readRoomMessages(String address, long groupId, int messageCount, boolean enableFifo,
+            boolean enableReadReceipt, CallbackContext callbackContext) throws JSONException {
         JSONObject result = new JSONObject();
         try {
             if (this.readDbSession == null) {
@@ -255,7 +262,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
                 this.readDbSession.enableReadReceipt(enableReadReceipt);
                 this.readDbSession.enableFifo(enableFifo);
             }
-            // Los mensajes leídos, serán enviados a cordova a través del método "Mesibo_onMessage"
+            // Los mensajes leídos, serán enviados a cordova a través del método
+            // "Mesibo_onMessage"
             int status = this.readDbSession.read(messageCount);
 
             result.put("success", true);
@@ -290,9 +298,11 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
     }
 
     // Obtiene una lista de mensajes de un perfil en particular
-    // La diferencia con readRoomMessages es que la sesión de lectura dura solamente la ejecución del método
+    // La diferencia con readRoomMessages es que la sesión de lectura dura solamente
+    // la ejecución del método
     // Generalmente se usa para leer el último mensaje de cada conversación
-    private boolean readProfileMessages(String address, long groupId, int messageCount, boolean enableFifo, boolean enableReadReceipt, CallbackContext callbackContext) throws JSONException {
+    private boolean readProfileMessages(String address, long groupId, int messageCount, boolean enableFifo,
+            boolean enableReadReceipt, CallbackContext callbackContext) throws JSONException {
         JSONObject result = new JSONObject();
         try {
             Mesibo.UserProfile profile = MesiboCordova.getProfile(address, groupId);
@@ -307,7 +317,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
             readDbSession.enableReadReceipt(enableReadReceipt);
             readDbSession.enableFifo(enableFifo);
 
-            // Los mensajes leídos, serán enviados a cordova a través del método "Mesibo_onMessage"
+            // Los mensajes leídos, serán enviados a cordova a través del método
+            // "Mesibo_onMessage"
             int status = readDbSession.read(messageCount);
 
             result.put("status", status);
@@ -320,7 +331,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
         }
     }
 
-    private boolean sendActivity(String peer, long groupId, String sender, int activity, int roomId, CallbackContext callbackContext) throws JSONException {
+    private boolean sendActivity(String peer, long groupId, String sender, int activity, int roomId,
+            CallbackContext callbackContext) throws JSONException {
         JSONObject result = new JSONObject();
         try {
             // Creamos la instancia de mensaje
@@ -348,7 +360,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
                 else if (!(peer == null || peer.equals(""))) {
                     messageParams.setPeer(peer);
                 }
-                // Si no tenemos ninguno de los 2, retornamos el error y paramos la ejecución del método
+                // Si no tenemos ninguno de los 2, retornamos el error y paramos la ejecución
+                // del método
                 else {
                     result.put("message", "Debe proveer un peer o groupId.");
                     callbackContext.error(result);
@@ -400,7 +413,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
         }
     }
 
-    private boolean saveCustomMessage(int id, String peer, long groupId, int type, String message, String sender, CallbackContext callbackContext) throws JSONException {
+    private boolean saveCustomMessage(int id, String peer, long groupId, int type, String message, String sender,
+            CallbackContext callbackContext) throws JSONException {
         JSONObject result = new JSONObject();
         try {
             Mesibo.MessageParams messageParams = new Mesibo.MessageParams();
@@ -491,7 +505,8 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
     }
 
     // Envía un mensaje a un grupo o usuario
-    private boolean sendMessage(String peer, long groupId, int type, String message, String sender, CallbackContext callbackContext) throws JSONException {
+    private boolean sendMessage(String peer, long groupId, int type, String message, String sender,
+            CallbackContext callbackContext) throws JSONException {
         JSONObject result = new JSONObject();
         try {
             Mesibo.MessageParams messageParams = new Mesibo.MessageParams();
@@ -509,7 +524,7 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
                 return false;
             }
 
-            Mesibo.UserProfile selfProfile = Mesibo.getSelfProfile();
+            Mesibo.UserProfile selfProfile = Mesibo.getUserProfile(sender);
 
             if (selfProfile == null) {
                 selfProfile = new Mesibo.UserProfile();
@@ -659,12 +674,18 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
             // Creamos un objeto tipo JSON
             JSONObject result = new JSONObject();
 
+            Mesibo.createUserProfile(peer, groupid, peer);
+
             // Obtenemos el perfil
             Mesibo.UserProfile tempProfile = (!is_group ? Mesibo.getUserProfile(peer) : Mesibo.getUserProfile(groupid));
 
             if (tempProfile == null) {
-                tempProfile = Mesibo.createUserProfile(peer, groupid, peer);
+                tempProfile = new Mesibo.UserProfile();
+                tempProfile.address = peer;
+                tempProfile.groupid = groupid;
             }
+
+            Log.i("VOLON", tempProfile.name + " " + tempProfile.unread);
 
             Profile profile = new Profile();
 
@@ -805,7 +826,6 @@ public class MesiboCordova extends CordovaPlugin implements Mesibo.MessageListen
     public void Mesibo_onFile(Mesibo.MessageParams messageParams, Mesibo.FileInfo fileInfo) {
 
     }
-
 
     @Override
     public boolean Mesibo_onUpdateUserProfiles(Mesibo.UserProfile mProfile) {

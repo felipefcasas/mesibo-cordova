@@ -119,12 +119,7 @@
                 
                 MesiboCordova.readDbSession = MesiboReadSession()
                 MesiboCordova.readDbSession?.enableFifo(enableFifo)
-                
-                if(enableReadReceipt == true) {
-                    MesiboCordova.readDbSession?.enableReadReceipt(true)
-                } else {
-                    MesiboCordova.readDbSession?.disableReadReceipt(true)
-                }
+                MesiboCordova.readDbSession?.enableReadReceipt(enableReadReceipt)
                 
                 // Si groupid es mayor a 0, estamos leyendo mensajes de un grupo
                 if(groupid > 0) {
@@ -190,12 +185,7 @@
             
             let readDbSession = MesiboReadSession()
             readDbSession.enableFifo(enableFifo)
-            
-            if(enableReadReceipt == true) {
-                readDbSession.enableReadReceipt(true)
-            } else {
-                readDbSession.disableReadReceipt(true)
-            }
+            readDbSession.enableReadReceipt(enableReadReceipt)
             
             // Si groupid es mayor a 0, estamos leyendo mensajes de un grupo
             if(groupid > 0) {
@@ -440,11 +430,11 @@
             // Obtenemos los parámetros del JSON
             let params = command.arguments[0] as? [String:Any]
             
-            var id = 0
-
-            do {
-                id = try params?["id"] as! UInt32
-            } catch let error { id = 0 }
+            var messageId: UInt32 = 0
+            
+            if(params?["id"] != nil) {
+                messageId = params?["id"] as! UInt32
+            }
             
             let peer = params?["peer"] as! String
             let groupId = params?["groupId"] as! UInt32
@@ -455,6 +445,7 @@
             let messageParams = MesiboParams()
             
             messageParams.type = type
+            messageParams.flag = UInt32(MESIBO_FLAG_SAVECUSTOM);
             
             // Si groupId es mayor a 0, estamos enviando un mensaje a un grupo
             if(groupId > 0) {
@@ -489,12 +480,15 @@
             mesiboUserProfile.flag = selfProfile!.flag;
             mesiboUserProfile.lastActiveTime = selfProfile!.lastActiveTime;
             
-            let messageId = (id > 0 ? id : Mesibo.getInstance().random());
+            if(messageId == 0) {
+                messageId = Mesibo.getInstance().random();
+            }
             
             do {
                 let data = message.data(using: .utf8)!
                 let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                let saved = Mesibo.getInstance()?.saveCustomMessage(messageParams, msgid: messageId, string: message)
+                let saved = Mesibo.getInstance()?.sendMessage(messageParams, msgid: messageId, string: message)
+                
                 var file: Any = ""
                 
                 if(saved == 0) {
