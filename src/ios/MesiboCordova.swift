@@ -426,8 +426,10 @@
             
             // Declaramos un resultado para Cordova (Asumimos que fallará)
             var result = ["message": "Debe proveer un groupId o peer."] as [AnyHashable : Any]
+            let pluginResult = CDVPluginResult (status: CDVCommandStatus_OK, messageAs: result);
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId);
             
-            // Obtenemos los parámetros del JSON
+            /* // Obtenemos los parámetros del JSON
             let params = command.arguments[0] as? [String:Any]
             
             var messageId: UInt32 = 0
@@ -541,7 +543,7 @@
                 result = ["message": parsingError] as [AnyHashable : Any]
                 let pluginResult = CDVPluginResult (status: CDVCommandStatus_ERROR, messageAs: result);
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId);
-            }
+            } */
         }
         
         // Realiza una llamada (normal o de video)
